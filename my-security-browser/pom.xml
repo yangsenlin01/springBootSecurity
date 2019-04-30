@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>my-security-browser</artifactId>
+    <parent>
+        <groupId>com.hand.security</groupId>
+        <artifactId>my-security</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../my-security</relativePath>
+    </parent>
+
+    <dependencies>
+
+        <!-- 添加core依赖，这样core下的依赖在这里也可以用 -->
+        <dependency>
+            <groupId>com.hand.security</groupId>
+            <artifactId>my-security-core</artifactId>
+            <version>${my.security.version}</version>
+        </dependency>
+
+        <!-- 浏览器中传递信息常用到的session，做集群session管理时会用到 -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session</artifactId>
+        </dependency>
+    </dependencies>
+    
+</project>

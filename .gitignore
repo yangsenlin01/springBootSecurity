@@ -18,6 +18,30 @@
 *.zip
 *.tar.gz
 *.rar
+my-security/target
+my-security-app/target
+my-security-browser/target
+my-security-core/target
+my-security-demo/target
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+.recommenders/
+Serviers/
+
+# Intellij
+.idea/
+my-security/my-security.iml
+my-security-app/my-security-app.iml
+my-security-browser/my-security-browser.iml
+my-security-core/my-security-core.iml
+my-security-demo/my-security-demo.iml
+
+# vscode
+.vscode/
