@@ -10,6 +10,7 @@ public class BrowserProperties {
 
     /**
      * 'hand.security.browser.loginPage'的属性会被读取到这里
+     * 程序运行时如果没有读取到相应的配置，就会使用"/hand-login.html"作为默认值
      */
     private String loginPage = "/hand-login.html";
 
