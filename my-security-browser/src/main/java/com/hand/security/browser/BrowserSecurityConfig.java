@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,6 +20,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
+
+    @Autowired
+    private AuthenticationSuccessHandler handAuthenticationSuccessHandle;
+
+    @Autowired
+    private AuthenticationFailureHandler handAuthenticationFailureHandler;
 
     @Autowired
     private SecurityProperties securityProperties;
@@ -35,11 +43,15 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
         // 表单登陆方式
         http.formLogin()
                 // 指定登陆页面，不指定的话会跳转到默认的spring boot登陆页面，/demo-login.html页面放在resources/resource/下
-                //.loginPage("/demo-login.html")
+                //.loginPage("/hand-login.html")
                 .loginPage("/authentication/require")
                 // 指定登录的url，也就是form表单里面的那个action。
                 // 默认的是/login，默认的可以在UsernamePasswordAuthenticationFilter.java中查看
                 .loginProcessingUrl("/authentication/form")
+                // 登录成功后执行的操作
+                .successHandler(handAuthenticationSuccessHandle)
+                // 登录失败后的操作
+                .failureHandler(handAuthenticationFailureHandler)
                 // 添加操作
                 .and()
                 // 表示下面的都是请求授权操作

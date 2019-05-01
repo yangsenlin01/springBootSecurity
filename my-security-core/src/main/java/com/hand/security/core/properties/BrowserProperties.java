@@ -1,11 +1,17 @@
 package com.hand.security.core.properties;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author senlin.yang@hand-china.com
  * @version V1.0
  * @Date 2019-4-30
  * @description
  */
+
+@Getter
+@Setter
 public class BrowserProperties {
 
     /**
@@ -14,11 +20,9 @@ public class BrowserProperties {
      */
     private String loginPage = "/hand-login.html";
 
-    public String getLoginPage() {
-        return loginPage;
-    }
+    /**
+     * 请求类型，如果是JSON就返回一段json数据；如果是重定向就使用security默认的处理器
+     */
+    private LoginType loginType = LoginType.JSON;
 
-    public void setLoginPage(String loginPage) {
-        this.loginPage = loginPage;
-    }
 }
