@@ -8,6 +8,11 @@ import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +31,36 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
+
+    /**
+     * 从security上下文中获取认证信息
+     * @return
+     */
+    @GetMapping("/me")
+    public Object getCurrentUserDetail() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    /**
+     * 参数形式获取认证信息
+     *
+     * @param authentication
+     * @return
+     */
+    @GetMapping("/me2")
+    public Object getCurrentUserDetail2(Authentication authentication) {
+        return authentication;
+    }
+
+    /**
+     * 获取认证信息，只返回用户信息
+     * @param user
+     * @return
+     */
+    @GetMapping("/me/user")
+    public Object getCurrentUser(@AuthenticationPrincipal UserDetails user) {
+        return user;
+    }
 
     @PostMapping
     public User create(@Valid @RequestBody User user, BindingResult errors) {
