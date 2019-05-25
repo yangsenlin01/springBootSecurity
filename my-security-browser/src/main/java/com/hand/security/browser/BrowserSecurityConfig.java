@@ -1,6 +1,7 @@
 package com.hand.security.browser;
 
 import com.hand.security.core.properties.SecurityProperties;
+import com.hand.security.core.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,10 +40,15 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
+        validateCodeFilter.setAuthenticationFailureHandler(handAuthenticationFailureHandler);
+
         // 默认的登录方式，也就是会出现一个弹出框，让我们输入账号密码
         // http.httpBasic()
         // 表单登陆方式
-        http.formLogin()
+        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin()
                 // 指定登陆页面，不指定的话会跳转到默认的spring boot登陆页面，/demo-login.html页面放在resources/resource/下
                 //.loginPage("/hand-login.html")
                 .loginPage("/authentication/require")
@@ -60,7 +67,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
                 // 如果不加这个，用户没登录就会跳转到/demo-login.html页面进行登陆，但是/demo-login.html也需要认证，又会跳转到/demo-login.html，这样会死循环下去
                 //.antMatchers("/demo-login.html").permitAll()
                 .antMatchers("/authentication/require",
-                        securityProperties.getBrowser().getLoginPage()).permitAll()
+                        securityProperties.getBrowser().getLoginPage(),
+                        "/code/image").permitAll()
                 // 所有的请求都需要,都需要身份认证
                 .anyRequest().authenticated()
                 // 添加一个操作
