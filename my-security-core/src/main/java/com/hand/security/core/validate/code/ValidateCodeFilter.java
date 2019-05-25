@@ -1,9 +1,12 @@
 package com.hand.security.core.validate.code;
 
+import com.hand.security.core.properties.SecurityProperties;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.social.connect.web.HttpSessionSessionStrategy;
 import org.springframework.social.connect.web.SessionStrategy;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -14,14 +17,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author senlin.yang@hand-china.com
  * @version V1.0
  * @Date 2019-5-25
  * @description OncePerRequestFilter这个是security的基础过滤器，表示只会被调用一次，不重复
+ * 实现InitializingBean接口并覆盖afterPropertiesSet()方法：等待其它参数都组装完毕后，才到afterPropertiesSet方法
  */
-public class ValidateCodeFilter extends OncePerRequestFilter {
+public class ValidateCodeFilter extends OncePerRequestFilter implements InitializingBean {
 
     private AuthenticationFailureHandler authenticationFailureHandler;
 
@@ -30,14 +36,49 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
      */
     private SessionStrategy sessionStrategy = new HttpSessionSessionStrategy();
 
+    /**
+     * 存储需要拦截的url
+     */
+    private Set<String> urls = new HashSet<>();
+
+    private SecurityProperties securityProperties;
+
+    /**
+     * spring的匹配工具类，匹配接口路径很方便
+     * 比如匹配/user和/user/*就很方便
+     */
+    private AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        // 将配置的urls用逗号切开
+        String[] configUrls = StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getCode().getImage().getUrls(), ",");
+        if (configUrls == null) {
+            configUrls = new String[0];
+        }
+        for (String configUrl : configUrls) {
+            urls.add(configUrl);
+        }
+        // 登录必须要验证码校验
+        urls.add("/authentication/form");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 如果是登录请求并且是post方式
-        if (StringUtils.equals("/authentication/form", request.getRequestURI())
-                && StringUtils.equalsIgnoreCase(request.getMethod(), "post")) {
+        // 是否需要验证码校验的标识
+        boolean action = false;
+        for (String url : urls) {
+            // 将本次请求的url和配置的urls进行匹配
+            if (pathMatcher.match(url, request.getRequestURI())) {
+                action = true;
+                break;
+            }
+        }
 
+        if (action) {
             try {
                 validate(new ServletWebRequest(request));
             } catch (ValidateCodeException e) {
@@ -84,6 +125,14 @@ public class ValidateCodeFilter extends OncePerRequestFilter {
 
         sessionStrategy.removeAttribute(request, ValidateCodeController.SESSION_KEY);
 
+    }
+
+    public SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
+    public void setSecurityProperties(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
     }
 
     public AuthenticationFailureHandler getAuthenticationFailureHandler() {

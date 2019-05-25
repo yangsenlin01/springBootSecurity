@@ -43,6 +43,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
 
         ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
         validateCodeFilter.setAuthenticationFailureHandler(handAuthenticationFailureHandler);
+        validateCodeFilter.setSecurityProperties(securityProperties);
+        validateCodeFilter.afterPropertiesSet();
 
         // 默认的登录方式，也就是会出现一个弹出框，让我们输入账号密码
         // http.httpBasic()
