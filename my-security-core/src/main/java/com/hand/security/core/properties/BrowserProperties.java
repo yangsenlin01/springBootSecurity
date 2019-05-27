@@ -25,4 +25,9 @@ public class BrowserProperties {
      */
     private LoginType loginType = LoginType.JSON;
 
+    /**
+     * 记住我有效期，默认一周
+     */
+    private int rememberMeSeconds = 60 * 60 * 24 * 7;
+
 }

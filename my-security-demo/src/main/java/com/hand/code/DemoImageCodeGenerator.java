@@ -12,7 +12,7 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @description 应用中的验证码生成逻辑
  */
 
-@Component("imageCodeGenerator")
+//@Component("imageCodeGenerator")
 public class DemoImageCodeGenerator implements ValidateCodeGenerator {
     @Override
     public ImageCode generate(ServletWebRequest request) {

@@ -6,12 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
 
 /**
  * @author senlin.yang@hand-china.com
@@ -32,6 +37,30 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
     @Autowired
     private SecurityProperties securityProperties;
 
+    /**
+     * 数据源，在demo配置文件中配置
+     */
+    @Autowired
+    private DataSource dataSource;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    /**
+     * 记住我
+     *
+     * @return
+     */
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        // 下面这个语句是启动时自动执行这个SQL(也可以自己手动去数据库执行)：JdbcTokenRepositoryImpl.CREATE_TABLE_SQL，当然如果数据库已经存在这个表，启动项目会报错
+        //tokenRepository.setCreateTableOnStartup(true);
+
+        return tokenRepository;
+    }
+
     /**激活密码加密验证*/
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -49,8 +78,11 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
         // 默认的登录方式，也就是会出现一个弹出框，让我们输入账号密码
         // http.httpBasic()
         // 表单登陆方式
-        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin()
+        http
+            // 验证码拦截器，表示在UsernamePasswordAuthenticationFilter这个拦截器前面执行
+            .addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
+            // 登录方式
+            .formLogin()
                 // 指定登陆页面，不指定的话会跳转到默认的spring boot登陆页面，/demo-login.html页面放在resources/resource/下
                 //.loginPage("/hand-login.html")
                 .loginPage("/authentication/require")
@@ -61,10 +93,18 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
                 .successHandler(handAuthenticationSuccessHandle)
                 // 登录失败后的操作
                 .failureHandler(handAuthenticationFailureHandler)
-                // 添加操作
                 .and()
-                // 表示下面的都是请求授权操作
-                .authorizeRequests()
+             // 记住我
+            .rememberMe()
+                // 获取JdbcTokenRepositoryImpl的实现
+                .tokenRepository(persistentTokenRepository())
+                // 默认有效期
+                .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
+                // 添加认证信息
+                .userDetailsService(userDetailsService)
+                .and()
+            // 请求授权
+            .authorizeRequests()
                 // 添加一个匹配器，匹配/demo-login.html这个url，指定不需要认证，注意这个需要放在anyRequest()之前
                 // 如果不加这个，用户没登录就会跳转到/demo-login.html页面进行登陆，但是/demo-login.html也需要认证，又会跳转到/demo-login.html，这样会死循环下去
                 //.antMatchers("/demo-login.html").permitAll()
@@ -73,9 +113,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
                         "/code/image").permitAll()
                 // 所有的请求都需要,都需要身份认证
                 .anyRequest().authenticated()
-                // 添加一个操作
                 .and()
-                // csrf是spring security默认的跨站请求伪造防护，我们现在关闭它，否则登录之后会报错
-                .csrf().disable();
+            // csrf是spring security默认的跨站请求伪造防护，我们现在关闭它，否则登录之后会报错
+            .csrf().disable();
     }
 }
