@@ -1,6 +1,7 @@
 package com.hand.security.browser;
 
 import com.hand.security.browser.support.SimpleResponse;
+import com.hand.security.core.properties.SecurityConstants;
 import com.hand.security.core.properties.SecurityProperties;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class BrowserSecurityController {
      * @return
      * @throws IOException
      */
-    @RequestMapping("/authentication/require")
+    @RequestMapping(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL)
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     public SimpleResponse requireAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -66,8 +67,12 @@ public class BrowserSecurityController {
                 // 拿到引发跳转的请求
                 String targetUrl = savedRequest.getRedirectUrl();
                 logger.info("引发跳转的请求是：" + targetUrl);
+                Integer port = request.getServerPort();
+                logger.info("请求端口号为：" + port);
                 // 如果是html请求，跳转到登录页，否者返回一段json字符串
-                if (StringUtils.endsWith(targetUrl, ".html")) {
+                if (StringUtils.endsWith(targetUrl, ".html")
+                        || StringUtils.endsWith(targetUrl, port.toString())
+                        || StringUtils.endsWith(targetUrl, port.toString() + "/")) {
                     redirectStrategy.sendRedirect(request, response, securityProperties.getBrowser().getLoginPage());
                 }
             }

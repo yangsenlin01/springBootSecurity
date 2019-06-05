@@ -1,6 +1,8 @@
-package com.hand.security.core.validate.code;
+package com.hand.security.core.validate.code.image;
 
 import com.hand.security.core.properties.SecurityProperties;
+import com.hand.security.core.validate.code.ValidateCodeGenerator;
+import com.hand.security.core.validate.code.image.ImageCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.context.request.ServletWebRequest;

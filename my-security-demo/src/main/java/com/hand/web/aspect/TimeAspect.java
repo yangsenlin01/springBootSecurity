@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Aspect
-@Component
+//@Component
 public class TimeAspect {
 
     /**监听UserController的任何方法*/

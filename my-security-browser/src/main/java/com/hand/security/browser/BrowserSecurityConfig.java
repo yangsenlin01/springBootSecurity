@@ -2,6 +2,7 @@ package com.hand.security.browser;
 
 import com.hand.security.core.properties.SecurityProperties;
 import com.hand.security.core.validate.code.ValidateCodeFilter;
+import com.hand.security.core.validate.code.ValidateCodeProcessorHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,6 +47,9 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private ValidateCodeProcessorHolder validateCodeProcessorHolder;
+
     /**
      * 记住我
      *
@@ -73,6 +77,7 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
         ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
         validateCodeFilter.setAuthenticationFailureHandler(handAuthenticationFailureHandler);
         validateCodeFilter.setSecurityProperties(securityProperties);
+        validateCodeFilter.setValidateCodeProcessorHolder(validateCodeProcessorHolder);
         validateCodeFilter.afterPropertiesSet();
 
         // 默认的登录方式，也就是会出现一个弹出框，让我们输入账号密码
@@ -110,7 +115,7 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
                 //.antMatchers("/demo-login.html").permitAll()
                 .antMatchers("/authentication/require",
                         securityProperties.getBrowser().getLoginPage(),
-                        "/code/image").permitAll()
+                        "/code/*").permitAll()
                 // 所有的请求都需要,都需要身份认证
                 .anyRequest().authenticated()
                 .and()

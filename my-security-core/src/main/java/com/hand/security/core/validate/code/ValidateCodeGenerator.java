@@ -11,11 +11,11 @@ import org.springframework.web.context.request.ServletWebRequest;
 public interface ValidateCodeGenerator {
 
     /**
-     * 图片验证码生成方法
+     * 验证码生成方法
      *
      * @param request
      * @return
      */
-    ImageCode generate(ServletWebRequest request);
+    ValidateCode generate(ServletWebRequest request);
 
 }

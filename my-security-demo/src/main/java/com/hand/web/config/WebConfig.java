@@ -19,7 +19,7 @@ import java.util.List;
  * @description
  */
 
-@Configuration
+//@Configuration
 public class WebConfig extends WebMvcConfigurerAdapter{
 
     @Autowired

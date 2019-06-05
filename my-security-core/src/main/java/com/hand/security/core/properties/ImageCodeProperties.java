@@ -12,7 +12,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ImageCodeProperties {
+public class ImageCodeProperties extends SmsCodeProperties {
+
+    public ImageCodeProperties() {
+        setLength(4);
+    }
 
     /**
      * 默认宽度
@@ -23,21 +27,5 @@ public class ImageCodeProperties {
      * 默认高度
      */
     private int heigth = 23;
-
-    /**
-     * 默认位数
-     */
-    private int length = 4;
-
-    /**
-     * 默认失效时间
-     */
-    private int expireIn = 60;
-
-    /**
-     * 需要使用验证码认证的接口，多个可使用逗号隔开
-     * 比如：hand.security.code.image.url = /user,/user/*
-     */
-    private String urls;
 
 }

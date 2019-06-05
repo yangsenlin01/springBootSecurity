@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  * @description
  */
 
-@Component
+//@Component
 public class TimeInterceptor implements HandlerInterceptor{
 
     /**控制器被调用之前调用此方法*/
