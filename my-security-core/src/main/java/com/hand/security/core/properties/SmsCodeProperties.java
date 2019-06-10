@@ -17,7 +17,7 @@ public class SmsCodeProperties {
     /**
      * 默认位数
      */
-    private int length = 4;
+    private int length = 6;
 
     /**
      * 默认失效时间

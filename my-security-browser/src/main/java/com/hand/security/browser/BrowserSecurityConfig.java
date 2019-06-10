@@ -1,5 +1,6 @@
 package com.hand.security.browser;
 
+import com.hand.security.core.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
 import com.hand.security.core.properties.SecurityProperties;
 import com.hand.security.core.validate.code.ValidateCodeFilter;
 import com.hand.security.core.validate.code.ValidateCodeProcessorHolder;
@@ -49,6 +50,9 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Autowired
     private ValidateCodeProcessorHolder validateCodeProcessorHolder;
+
+    @Autowired
+    private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
 
     /**
      * 记住我
@@ -120,6 +124,7 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter{
                 .anyRequest().authenticated()
                 .and()
             // csrf是spring security默认的跨站请求伪造防护，我们现在关闭它，否则登录之后会报错
-            .csrf().disable();
+            .csrf().disable()
+            .apply(smsCodeAuthenticationSecurityConfig);
     }
 }
