@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.social.security.SpringSocialConfigurer;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -50,6 +51,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     @Autowired
     private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
 
+    @Autowired
+    private SpringSocialConfigurer demoSocialSecurityConfig;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -59,6 +63,8 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
         http.apply(smsCodeAuthenticationSecurityConfig)
                 .and()
             .apply(validateCodeSecurityConfig)
+                .and()
+            .apply(demoSocialSecurityConfig)
                 .and()
              // 记住我
             .rememberMe()

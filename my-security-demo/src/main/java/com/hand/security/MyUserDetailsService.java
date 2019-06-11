@@ -1,14 +1,16 @@
-package com.hand.security.browser;
+package com.hand.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.social.security.SocialUser;
+import org.springframework.social.security.SocialUserDetails;
+import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,7 +21,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class MyUserDetailsService implements UserDetailsService {
+public class MyUserDetailsService implements UserDetailsService, SocialUserDetailsService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -33,18 +35,37 @@ public class MyUserDetailsService implements UserDetailsService {
      * 之后spring security会根据这个返回的user对象，从里面取出账号密码和登录时输入的账号密码相匹配。
      * user对象中(应该说是UserDetails)还包含了以下等信息：
      * 账号权限、账号是否没有被锁、是否没有过期、是否没有密码过期、是否激活等信息
+     *
      * @param username
      * @return
      * @throws UsernameNotFoundException
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        logger.info("登录用户名：" + username);
-        // 假装我们从数据库取出的密码是加密的，注意，encode方法应该在用户注册时调用
+        logger.info("表单登录用户名:" + username);
+        return buildUser(username);
+    }
+
+    /**
+     * 第三方登录
+     *
+     * @param userId
+     * @return
+     * @throws UsernameNotFoundException
+     */
+    @Override
+    public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
+        logger.info("社交登录用户Id:" + userId);
+        return buildUser(userId);
+    }
+
+    private SocialUserDetails buildUser(String userId) {
+        // 根据用户名查找用户信息
+        // 根据查找到的用户信息判断用户是否被冻结
         String password = passwordEncoder.encode("123456");
-        logger.info("从数据库取出的密码是：" + password);
-        return new User(username, password,
+        logger.info("数据库密码是:" + password);
+        return new SocialUser(userId, password,
                 true, true, true, true,
-                AuthorityUtils.createAuthorityList("admin"));
+                AuthorityUtils.commaSeparatedStringToAuthorityList("admin"));
     }
 }
