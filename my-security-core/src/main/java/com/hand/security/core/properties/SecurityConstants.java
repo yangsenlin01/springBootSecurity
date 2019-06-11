@@ -30,7 +30,7 @@ public interface SecurityConstants {
      *
      * @see SecurityController
      */
-    public static final String DEFAULT_LOGIN_PAGE_URL = "/hand-login.html";
+    public static final String DEFAULT_LOGIN_PAGE_URL = "/hand-signIn.html";
     /**
      * 验证图片验证码时，http请求中默认的携带图片验证码信息的参数的名称
      */

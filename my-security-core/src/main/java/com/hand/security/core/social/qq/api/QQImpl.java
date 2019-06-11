@@ -1,5 +1,6 @@
 package com.hand.security.core.social.qq.api;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class QQImpl extends AbstractOAuth2ApiBinding implements QQ {
         String url = String.format(URL_GET_OPENID, accessToken);
         String result = getRestTemplate().getForObject(url, String.class);
         logger.info("拿到的openId为：" + result);
-        this.openId = StringUtils.substringBetween(result, "\"openid\":\"", "\"");
+        this.openId = StringUtils.substringBetween(result, "\"openid\":\"", "\"}");
     }
 
     @Override
@@ -52,8 +53,12 @@ public class QQImpl extends AbstractOAuth2ApiBinding implements QQ {
         String url = String.format(URL_GET_USERINFO, appId, openId);
         String result = getRestTemplate().getForObject(url, String.class);
         logger.info("拿到的用户信息为：" + result);
+        QQUserInfo userInfo = null;
         try {
-            return objectMapper.readValue(result, QQUserInfo.class);
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            userInfo = objectMapper.readValue(result, QQUserInfo.class);
+            userInfo.setOpenId(openId);
+            return userInfo;
         } catch (Exception e) {
             logger.info(e.getMessage());
             throw new RuntimeException("获取用户信息失败", e);
