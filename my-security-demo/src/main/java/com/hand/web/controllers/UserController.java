@@ -3,20 +3,22 @@ package com.hand.web.controllers;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.hand.dto.User;
 import com.hand.dto.UserQueryCondition;
-import com.hand.exception.UserNotExistException;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.social.connect.web.ProviderSignInUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.ServletWebRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,34 +34,45 @@ import java.util.List;
 @RequestMapping(value = "/user")
 public class UserController {
 
+    @Autowired
+    private ProviderSignInUtils providerSignInUtils;
+
     /**
-     * 从security上下文中获取认证信息
+     * 注册/绑定用户
+     *
+     * @param user
+     * @return
+     */
+    @PostMapping("/regist")
+    public void regist(User user, HttpServletRequest request) {
+        String userId = user.getUsername();
+        // 将注册之后获取到的userId返回给social，与第三方的信息一并存入dome_connectionuser表中
+        providerSignInUtils.doPostSignUp(userId, new ServletWebRequest(request));
+    }
+
+    /**
+     * 获取认证信息
+     *
      * @return
      */
     @GetMapping("/me")
     public Object getCurrentUserDetail() {
+        // 从security上下文中获取认证信息
         return SecurityContextHolder.getContext().getAuthentication();
-    }
 
-    /**
-     * 参数形式获取认证信息
-     *
-     * @param authentication
-     * @return
-     */
-    @GetMapping("/me2")
-    public Object getCurrentUserDetail2(Authentication authentication) {
-        return authentication;
-    }
+        /*
+        参数形式获取认证信息1
+        public Object getCurrentUserDetail(Authentication authentication) {
+            return authentication;
+        }
+        */
 
-    /**
-     * 获取认证信息，只返回用户信息
-     * @param user
-     * @return
-     */
-    @GetMapping("/me/user")
-    public Object getCurrentUser(@AuthenticationPrincipal UserDetails user) {
-        return user;
+        /*
+        参数形式获取认证信息2
+        public Object getCurrentUserDetail(@AuthenticationPrincipal UserDetails user) {
+            return user;
+        }
+        */
     }
 
     @PostMapping
@@ -108,8 +121,9 @@ public class UserController {
     /**
      * 接收condition查询条件
      * Pageable是springMvc自带的分页方式
+     *
      * @param condition 一个dto
-     * @param pageable 分页参数
+     * @param pageable  分页参数
      * @return
      */
     @GetMapping
@@ -131,8 +145,9 @@ public class UserController {
     }
 
     /**
-     *  一般正常使用的方式:@GetMapping(value = "/{id}")
-     *  现在使用的是"/{id:\\d+}"，表示只接受数字
+     * 一般正常使用的方式:@GetMapping(value = "/{id}")
+     * 现在使用的是"/{id:\\d+}"，表示只接受数字
+     *
      * @param id
      * @return
      */

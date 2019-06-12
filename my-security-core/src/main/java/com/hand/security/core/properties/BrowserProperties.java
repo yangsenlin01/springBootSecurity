@@ -15,6 +15,11 @@ import lombok.Setter;
 public class BrowserProperties {
 
     /**
+     * 默认的注册页面
+     */
+    private String signUpUrl = "hand-signUp.html";
+
+    /**
      * 'hand.security.browser.loginPage'的属性会被读取到这里
      * 程序运行时如果没有读取到相应的配置，就会使用"/hand-login.html"作为默认值
      */
