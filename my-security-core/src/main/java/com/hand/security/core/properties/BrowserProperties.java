@@ -14,6 +14,8 @@ import lombok.Setter;
 @Setter
 public class BrowserProperties {
 
+    private SessionProperties session = new SessionProperties();
+
     /**
      * 默认的注册页面
      */
@@ -21,7 +23,7 @@ public class BrowserProperties {
 
     /**
      * 'hand.security.browser.loginPage'的属性会被读取到这里
-     * 程序运行时如果没有读取到相应的配置，就会使用"/hand-login.html"作为默认值
+     * 程序运行时如果没有读取到相应的配置，就会使用"/hand-signIn.html"作为默认值
      */
     private String loginPage = SecurityConstants.DEFAULT_LOGIN_PAGE_URL;
 

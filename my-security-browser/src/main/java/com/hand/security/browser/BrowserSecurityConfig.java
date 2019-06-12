@@ -1,5 +1,6 @@
 package com.hand.security.browser;
 
+import com.hand.security.browser.session.HandExpiredSessionStrategy;
 import com.hand.security.core.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
 import com.hand.security.core.properties.SecurityConstants;
 import com.hand.security.core.properties.SecurityProperties;
@@ -18,6 +19,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.InvalidSessionStrategy;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 import org.springframework.social.security.SpringSocialConfigurer;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +57,12 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     @Autowired
     private SpringSocialConfigurer demoSocialSecurityConfig;
 
+    @Autowired
+    private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
+
+    @Autowired
+    private InvalidSessionStrategy invalidSessionStrategy;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -74,6 +83,20 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
                 // 添加认证信息
                 .userDetailsService(userDetailsService)
+                .and()
+            .sessionManagement()
+                // session失效时，访问服务跳转的地址
+                //.invalidSessionUrl("/session/invalid")
+                // session失效时，进行的处理。与invalidSessionUrl不能同时存在
+                .invalidSessionStrategy(invalidSessionStrategy)
+                // 同一个session同时登录最大数量
+                .maximumSessions(securityProperties.getBrowser().getSession().getMaximumSessions())
+                // 达到最大session时是否阻止新的登录请求，默认为false，不阻止，新的登录会将老的登录失效掉
+                // 阻止的话新的session登录默认会返回一段提示content	"Maximum sessions of 1 for this principal exceeded"
+                .maxSessionsPreventsLogin(securityProperties.getBrowser().getSession().isMaxSessionsPreventsLogin())
+                // session并发时进行的处理，默认处理是挤掉之前的session
+                .expiredSessionStrategy(sessionInformationExpiredStrategy)
+                .and()
                 .and()
             // 请求授权
             .authorizeRequests()
