@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.InvalidSessionStrategy;
@@ -63,6 +64,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     @Autowired
     private InvalidSessionStrategy invalidSessionStrategy;
 
+    @Autowired
+    private LogoutSuccessHandler logoutSuccessHandler;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -98,6 +102,16 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)
                 .and()
                 .and()
+            .logout()
+                // 退出的url，默认是/logout，退出之后默认跳转到登录页面
+                .logoutUrl("/signOut")
+                // 退出之后跳转的url
+                //.logoutSuccessUrl("")
+                // 退出之后的处理，不能与logoutSuccessUrl同时存在
+                .logoutSuccessHandler(logoutSuccessHandler)
+                // 退出之后将浏览器中这个属性的值删除，即删除浏览器的cookies
+                .deleteCookies("JSESSIONID")
+                .and()
             // 请求授权
             .authorizeRequests()
                 // 添加一个匹配器，匹配/demo-login.html这个url，指定不需要认证，注意这个需要放在anyRequest()之前
@@ -108,6 +122,7 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                         securityProperties.getBrowser().getLoginPage(),
                         SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX + "/*",
                         securityProperties.getBrowser().getSignUpUrl(),
+                        securityProperties.getBrowser().getSignOutUrl(),
                         "/user/regist")
                         .permitAll()
                 // 所有的请求都需要,都需要身份认证

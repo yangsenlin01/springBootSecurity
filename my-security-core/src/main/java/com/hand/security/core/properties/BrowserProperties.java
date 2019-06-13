@@ -22,6 +22,11 @@ public class BrowserProperties {
     private String signUpUrl = "hand-signUp.html";
 
     /**
+     * 退出成功之后跳转的页面
+     */
+    private String signOutUrl;
+
+    /**
      * 'hand.security.browser.loginPage'的属性会被读取到这里
      * 程序运行时如果没有读取到相应的配置，就会使用"/hand-signIn.html"作为默认值
      */

@@ -1,5 +1,6 @@
 package com.hand.security.browser;
 
+import com.hand.security.browser.logout.HandLogoutSuccessHandler;
 import com.hand.security.browser.session.HandExpiredSessionStrategy;
 import com.hand.security.browser.session.HandInvalidSessionStrategy;
 import com.hand.security.core.properties.SecurityProperties;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.session.InvalidSessionStrategy;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
@@ -14,7 +16,7 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
  * @author senlin.yang@hand-china.com
  * @version V1.0
  * @Date 2019-6-12
- * @description session失效/并发处理类的两个Bean
+ * @description session失效/并发处理，退出登录等默认的实现bean
  */
 @Configuration
 public class BrowserSecurityBeanConfig {
@@ -32,6 +34,12 @@ public class BrowserSecurityBeanConfig {
     @ConditionalOnMissingBean(SessionInformationExpiredStrategy.class)
     public SessionInformationExpiredStrategy sessionInformationExpiredStrategy() {
         return new HandExpiredSessionStrategy(securityProperties.getBrowser().getSession().getSessionInvalidUrl());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(HandLogoutSuccessHandler.class)
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return new HandLogoutSuccessHandler(securityProperties.getBrowser().getSignOutUrl());
     }
 
 }
