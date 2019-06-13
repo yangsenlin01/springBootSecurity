@@ -1,4 +1,4 @@
-package com.hand.security.browser.support;
+package com.hand.security.core.support;
 
 /**
  * @author senlin.yang@hand-china.com

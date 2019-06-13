@@ -13,9 +13,14 @@
     </parent>
 
     <dependencies>
+        <!--<dependency>-->
+            <!--<groupId>com.hand.security</groupId>-->
+            <!--<artifactId>my-security-browser</artifactId>-->
+            <!--<version>${my.security.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.hand.security</groupId>
-            <artifactId>my-security-browser</artifactId>
+            <artifactId>my-security-app</artifactId>
             <version>${my.security.version}</version>
         </dependency>
         <!-- 引入test测试 -->

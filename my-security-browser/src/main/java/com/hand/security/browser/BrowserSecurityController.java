@@ -1,6 +1,6 @@
 package com.hand.security.browser;
 
-import com.hand.security.browser.support.SimpleResponse;
+import com.hand.security.core.support.SimpleResponse;
 import com.hand.security.browser.support.SocialUserInfo;
 import com.hand.security.core.properties.SecurityConstants;
 import com.hand.security.core.properties.SecurityProperties;

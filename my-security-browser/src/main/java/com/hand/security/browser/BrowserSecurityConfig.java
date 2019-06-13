@@ -1,22 +1,14 @@
 package com.hand.security.browser;
 
-import com.hand.security.browser.session.HandExpiredSessionStrategy;
+import com.hand.security.core.authentication.AbstractChannelSecurityConfig;
 import com.hand.security.core.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
 import com.hand.security.core.properties.SecurityConstants;
 import com.hand.security.core.properties.SecurityProperties;
-import com.hand.security.core.validate.code.ValidateCodeFilter;
-import com.hand.security.core.validate.code.ValidateCodeProcessorHolder;
-import com.hand.security.core.authentication.AbstractChannelSecurityConfig;
 import com.hand.security.core.validate.code.ValidateCodeSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -75,12 +67,12 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
 
         http.apply(smsCodeAuthenticationSecurityConfig)
                 .and()
-            .apply(validateCodeSecurityConfig)
+                .apply(validateCodeSecurityConfig)
                 .and()
-            .apply(demoSocialSecurityConfig)
+                .apply(demoSocialSecurityConfig)
                 .and()
-             // 记住我
-            .rememberMe()
+                // 记住我
+                .rememberMe()
                 // 获取JdbcTokenRepositoryImpl的实现
                 .tokenRepository(persistentTokenRepository())
                 // 默认有效期
@@ -88,7 +80,7 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 // 添加认证信息
                 .userDetailsService(userDetailsService)
                 .and()
-            .sessionManagement()
+                .sessionManagement()
                 // session失效时，访问服务跳转的地址
                 //.invalidSessionUrl("/session/invalid")
                 // session失效时，进行的处理。与invalidSessionUrl不能同时存在
@@ -102,7 +94,7 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)
                 .and()
                 .and()
-            .logout()
+                .logout()
                 // 退出的url，默认是/logout，退出之后默认跳转到登录页面
                 .logoutUrl("/signOut")
                 // 退出之后跳转的url
@@ -112,8 +104,8 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 // 退出之后将浏览器中这个属性的值删除，即删除浏览器的cookies
                 .deleteCookies("JSESSIONID")
                 .and()
-            // 请求授权
-            .authorizeRequests()
+                // 请求授权
+                .authorizeRequests()
                 // 添加一个匹配器，匹配/demo-login.html这个url，指定不需要认证，注意这个需要放在anyRequest()之前
                 // 如果不加这个，用户没登录就会跳转到/demo-login.html页面进行登陆，但是/demo-login.html也需要认证，又会跳转到/demo-login.html，这样会死循环下去
                 //.antMatchers("/demo-login.html").permitAll()
@@ -124,13 +116,13 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                         securityProperties.getBrowser().getSignUpUrl(),
                         securityProperties.getBrowser().getSignOutUrl(),
                         "/user/regist")
-                        .permitAll()
+                .permitAll()
                 // 所有的请求都需要,都需要身份认证
                 .anyRequest()
                 .authenticated()
                 .and()
-            // csrf是spring security默认的跨站请求伪造防护，我们现在关闭它，否则登录之后会报错
-            .csrf().disable();
+                // csrf是spring security默认的跨站请求伪造防护，我们现在关闭它，否则登录之后会报错
+                .csrf().disable();
     }
 
     /**
@@ -148,9 +140,4 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
         return tokenRepository;
     }
 
-    /**激活密码加密验证*/
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }
