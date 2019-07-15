@@ -42,4 +42,9 @@ public class BrowserProperties {
      */
     private int rememberMeSeconds = 60 * 60 * 24 * 7;
 
+    /**
+     * 视图跳转白名单
+     */
+    private String[] forwordURL;
+
 }

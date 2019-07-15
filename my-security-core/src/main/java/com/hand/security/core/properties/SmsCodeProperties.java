@@ -30,4 +30,14 @@ public class SmsCodeProperties {
      */
     private String urls;
 
+    /**
+     * 阿里云个人accessKeyId
+     */
+    private String accessKeyId;
+
+    /**
+     * 阿里云个人accessKeySecret
+     */
+    private String accessKeySecret;
+
 }

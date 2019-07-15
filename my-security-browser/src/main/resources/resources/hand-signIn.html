@@ -3,65 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <title>登录</title>
+
+    <link href="lib/toastr/toastr.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        .smsClass {
+            width: 100px;
+            height: 30px;
+            background-color: #ff3000;
+            border: 0;
+            border-radius: 15px;
+            color: #fff;
+        }
+
+        .smsSending {
+            width: 100px;
+            height: 30px;
+            background-color: #eee;
+            border: 0;
+            border-radius: 15px;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="lib/toastr/toastr.min.js"></script>
+
+    <script type="text/javascript">
+
+        /**
+         * 发送验证码
+         */
+        function sendSmsCode() {
+
+            var mobileNum = $("#mobile").val();
+            console.log(mobileNum);
+            if (!isMobileNum(mobileNum)) {
+                toastr.warning("请输入正确的手机号");
+                return false;
+            }
+
+            $("#smsInput").removeClass("smsClass");
+            $("#smsInput").addClass("smsSending");
+            $("#smsInput").attr("disabled", true);
+
+            sendMobileSmsCode(mobileNum);
+
+            var time = 60;
+            var timer = setInterval(function () {
+                if (time == 0) {
+                    clearInterval(timer);
+                    $("#smsInput").removeClass("smsSending");
+                    $("#smsInput").addClass("smsClass");
+                    $("#smsInput").attr("disabled", false);
+                    $("#smsInput").val("获取验证码");
+                } else {
+                    $('#smsInput').val(time + "秒");
+                    time--;
+                }
+            }, 1000);
+        }
+
+        /**
+         * 发送手机验证码
+         *
+         * @param mobileNum
+         * @returns
+         */
+        function sendMobileSmsCode(mobileNum) {
+            $.ajax({
+                url: "/code/sms?mobile=" + mobileNum,
+                type: "GET",
+                dataType: "json",
+                success: function (result) {
+                    if (!result.success) {
+                        toastr.warning(result.message);
+                    }
+                }
+            });
+        }
+
+        /**
+         * 校验手机号
+         *
+         * @param str
+         * @returns {boolean}
+         */
+        function isMobileNum(str) {
+            return /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/.test(str)
+        }
+    </script>
 </head>
 <body>
-    <h2>
-        标准登录页面
-    </h2>
-    <h3>
-        表单登录
-    </h3>
-    <!-- /authentication/form路径需要在BrowserSecurityConfig.java里配置 -->
-    <!-- 否者spring boot会认为登录认证的路径为/login -->
-    <!-- 用户名和密码必须是 username 和 password -->
-    <form action="/authentication/form" method="post">
-        <table>
-            <tr>
-                <td>用户名：</td>
-                <td><input type="text" name="username"></td>
-            </tr>
-            <tr>
-                <td>密码：</td>
-                <td><input type="password" name="password"></td>
-            </tr>
-            <tr>
-                <td>图形验证码:</td>
-                <td>
-                    <input type="text" name="imageCode">
-                    <img src="/code/image">
-                </td>
-            </tr>
-            <tr>
-                <td colspan='2'><input name="remember-me" type="checkbox" value="true" />记住我</td>
-            </tr>
-            <tr>
-                <td colspan="2"><button type="submit">登录</button></td>
-            </tr>
-        </table>
-    </form>
+<h2>
+    标准登录页面
+</h2>
+<h3>
+    表单登录
+</h3>
+<!-- /authentication/form路径需要在BrowserSecurityConfig.java里配置 -->
+<!-- 否者spring boot会认为登录认证的路径为/login -->
+<!-- 用户名和密码必须是 username 和 password -->
+<form action="/authentication/form" method="post">
+    <table>
+        <tr>
+            <td>用户名：</td>
+            <td><input type="text" name="username"></td>
+        </tr>
+        <tr>
+            <td>密码：</td>
+            <td><input type="password" name="password"></td>
+        </tr>
+        <tr>
+            <td>图形验证码:</td>
+            <td>
+                <input type="text" name="imageCode">
+                <img src="/code/image">
+            </td>
+        </tr>
+        <tr>
+            <td colspan='2'><input name="remember-me" type="checkbox" value="true"/>记住我</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="submit">登录</button>
+            </td>
+        </tr>
+    </table>
+</form>
 
-    <h3>短信登录</h3>
-    <form action="/authentication/mobile" method="post">
-        <table>
-            <tr>
-                <td>手机号:</td>
-                <td><input type="text" name="mobile" value="13012345678"></td>
-            </tr>
-            <tr>
-                <td>短信验证码:</td>
-                <td>
-                    <input type="text" name="smsCode">
-                    <a href="/code/sms?mobile=13012345678">发送验证码</a>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2"><button type="submit">登录</button></td>
-            </tr>
-        </table>
-    </form>
-    <h3>社交登录</h3>
-    <a href="/thirdPartyLogin/qq">QQ登录</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="/thirdPartyLogin/weixin">微信登录</a>
+<h3>短信登录</h3>
+<form action="/authentication/mobile" method="post">
+    <table>
+        <tr>
+            <td>手机号:</td>
+            <td><input type="text" id="mobile" name="mobile"></td>
+        </tr>
+        <tr>
+            <td>短信验证码:</td>
+            <td>
+                <input type="text" id="smsCode" name="smsCode">
+                <input type="button" id="smsInput" value="获取验证码" class="smsClass" onclick="sendSmsCode()"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="submit">登录</button>
+            </td>
+        </tr>
+    </table>
+</form>
+<h3>社交登录</h3>
+<a href="/thirdPartyLogin/qq">QQ登录</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="/thirdPartyLogin/weixin">微信登录</a>
 </body>
 </html>

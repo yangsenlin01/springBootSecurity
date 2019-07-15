@@ -1,5 +1,9 @@
 package com.hand.security;
 
+import com.hand.exception.UserNotExistException;
+import com.hand.web.entity.UserEntity;
+import com.hand.web.mapper.UserMapper;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +11,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.social.security.SocialUser;
 import org.springframework.social.security.SocialUserDetails;
 import org.springframework.social.security.SocialUserDetailsService;
@@ -26,7 +29,7 @@ public class MyUserDetailsService implements UserDetailsService, SocialUserDetai
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserMapper userMapper;
 
     /**
      * 该方法接收用户的登录名称，根据username去数据库或者任何存储账号的地方，查找账号相关信息，
@@ -43,7 +46,7 @@ public class MyUserDetailsService implements UserDetailsService, SocialUserDetai
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         logger.info("表单登录用户名:" + username);
-        return buildUser(username);
+        return buildUser(username, "1");
     }
 
     /**
@@ -56,14 +59,26 @@ public class MyUserDetailsService implements UserDetailsService, SocialUserDetai
     @Override
     public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
         logger.info("社交登录用户Id:" + userId);
-        return buildUser(userId);
+        return buildUser(userId, "2");
     }
 
-    private SocialUserDetails buildUser(String userId) {
-        // 根据用户名查找用户信息
-        // 根据查找到的用户信息判断用户是否被冻结
-        String password = passwordEncoder.encode("123456");
-        logger.info("数据库密码是:" + password);
+    /**
+     * @param userId
+     * @param type   1->表单登录，2->第三方登录
+     * @return
+     */
+    private SocialUserDetails buildUser(String userId, String type) {
+        // 查找用户信息，查找到的用户信息判断用户是否被冻结
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(userId);
+        userEntity = userMapper.selectOne(userEntity);
+        if (userEntity == null) {
+            logger.info("未查询到用户信息:" + userId);
+            throw new UserNotExistException(userId, userId + "用户不存在");
+        }
+
+        String password = userEntity.getPassword();
+        logger.info("成功获取用户信息:" + userId);
         return new SocialUser(userId, password,
                 true, true, true, true,
                 AuthorityUtils.commaSeparatedStringToAuthorityList("admin, ROLE_USER"));

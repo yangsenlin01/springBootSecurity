@@ -1,5 +1,8 @@
 package com.hand.security;
 
+import com.hand.web.entity.UserEntity;
+import com.hand.web.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionSignUp;
 import org.springframework.stereotype.Component;
@@ -12,9 +15,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DemoConnectionSignUp implements ConnectionSignUp {
+
+    @Autowired
+    private UserService userService;
+
     @Override
     public String execute(Connection<?> connection) {
-        // 根据社交用户信息创建用户并返回一个userId，我们这里直接返回社交用户的用户名
-        return connection.getDisplayName();
+        // 根据社交用户信息创建用户并返回一个userId
+        UserEntity userEntity = userService.registSocial(connection.getDisplayName());
+        return userEntity.getUsername();
     }
 }

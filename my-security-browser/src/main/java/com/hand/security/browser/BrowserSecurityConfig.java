@@ -115,7 +115,8 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                         SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX + "/*",
                         securityProperties.getBrowser().getSignUpUrl(),
                         securityProperties.getBrowser().getSignOutUrl(),
-                        "/user/regist")
+                        "/user/regist/**", "/lib/**", "/to-demo-signIn",
+                        "/demo-forget-password.html", "/user/find/password")
                 .permitAll()
                 // 所有的请求都需要,都需要身份认证
                 .anyRequest()

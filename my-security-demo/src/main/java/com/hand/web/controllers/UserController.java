@@ -3,25 +3,39 @@ package com.hand.web.controllers;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.hand.dto.User;
 import com.hand.dto.UserQueryCondition;
+import com.hand.security.core.support.ResponseData;
+import com.hand.security.core.validate.code.sms.DefaultSmsCodeSender;
+import com.hand.security.core.validate.code.sms.LimitSmsCodeSendTimes;
+import com.hand.web.entity.UserEntity;
+import com.hand.web.service.UserService;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.social.connect.web.ProviderSignInUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author senlin.yang@com.hand-china.com
@@ -38,6 +52,20 @@ public class UserController {
     private ProviderSignInUtils providerSignInUtils;
 
     /**
+     * 使用这个转发请求
+     */
+    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private DefaultSmsCodeSender defaultSmsCodeSender;
+
+    /**
      * 注册/绑定用户
      *
      * @param user
@@ -48,6 +76,73 @@ public class UserController {
         String userId = user.getUsername();
         // 将注册之后获取到的userId返回给social，与第三方的信息一并存入dome_connectionuser表中
         providerSignInUtils.doPostSignUp(userId, new ServletWebRequest(request));
+    }
+
+    @PostMapping("/regist/form")
+    public void formRegist(User user, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ResponseData responseData = userService.registForm(user);
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        redirectStrategy.sendRedirect(request, response, "/to-demo-signIn?message=" + URLEncoder.encode(responseData.getMessage(), "UTF-8"));
+    }
+
+    @PostMapping("/find/password")
+    public void findPassword(User user, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ResponseData responseData = userService.registFindPassword(user);
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        redirectStrategy.sendRedirect(request, response, "/to-demo-signIn?message=" + URLEncoder.encode(responseData.getMessage(), "UTF-8"));
+    }
+
+    @GetMapping("/regist/form/sendmobile")
+    public ResponseData formRegistSendSmsCode(@RequestParam("mobile") String mobile, HttpServletRequest request) {
+        ResponseData responseData = new ResponseData();
+        if (LimitSmsCodeSendTimes.validateTimes(request, redisTemplate, mobile)) {
+            // 验证码5分钟有效
+            String smsCode = RandomStringUtils.randomNumeric(6);
+            redisTemplate.opsForValue().set("springsecurity:regist:sms:smsCode_" + mobile, smsCode, 300, TimeUnit.SECONDS);
+            defaultSmsCodeSender.send(mobile, smsCode);
+
+            responseData.setSuccess(Boolean.TRUE);
+            responseData.setMessage("发送成功");
+            return responseData;
+        } else {
+            responseData.setSuccess(Boolean.FALSE);
+            responseData.setMessage("近一分钟已发送过手机验证码");
+            return responseData;
+        }
+    }
+
+    @GetMapping("/info")
+    public ResponseData getUserInfo(@AuthenticationPrincipal UserDetails user) {
+        return new ResponseData(userService.getUserInfo(user));
+    }
+
+    @PostMapping("/update")
+    public ResponseData updateUserInfo(UserEntity userEntity) {
+        return userService.updateUserInfo(userEntity);
+    }
+
+    @PostMapping("/uploadHeadImage")
+    public ResponseData uploadHeadImage(@RequestParam("file") MultipartFile file,
+                                        @RequestParam("id") Integer id) {
+        ResponseData responseData = new ResponseData();
+        if (file == null) {
+            responseData.setMessage("请文件不能为空");
+            responseData.setSuccess(Boolean.FALSE);
+            return responseData;
+        }
+        if (id == null) {
+            responseData.setMessage("用户ID不能为空");
+            responseData.setSuccess(Boolean.FALSE);
+            return responseData;
+        }
+        return userService.uploadHeadImage(file, id);
+    }
+
+    @RequestMapping("/headImage")
+    public void getUserHeadImage(@AuthenticationPrincipal UserDetails user, HttpServletRequest request, HttpServletResponse response) {
+        userService.getUserHeadImage(user,request, response);
     }
 
     /**

@@ -10,8 +10,8 @@ public class UserNotExistException extends RuntimeException {
 
     private String id;
 
-    public UserNotExistException(String id) {
-        super("user not exsit");
+    public UserNotExistException(String id, String message) {
+        super(message);
         this.id = id;
     }
 

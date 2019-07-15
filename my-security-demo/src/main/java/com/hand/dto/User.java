@@ -30,6 +30,13 @@ public class User {
     @Past(message = "生日不能为未来时间")
     private Date birthday;
 
+    private String phone;
+
+    /**
+     * 手机验证码
+     */
+    private String smsCode;
+
     @JsonView(value = UserSimpleView.class)
     public Date getBirthday() {
         return birthday;
@@ -64,5 +71,22 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @JsonView(value = UserSimpleView.class)
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getSmsCode() {
+        return smsCode;
+    }
+
+    public void setSmsCode(String smsCode) {
+        this.smsCode = smsCode;
     }
 }

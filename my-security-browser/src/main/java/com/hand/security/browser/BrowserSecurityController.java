@@ -79,8 +79,8 @@ public class BrowserSecurityController {
                 logger.info("请求端口号为：" + port);
                 // 如果是html请求，跳转到登录页，否者返回一段json字符串
                 if (StringUtils.endsWith(targetUrl, ".html")
-                        || StringUtils.endsWith(targetUrl, port.toString())
-                        || StringUtils.endsWith(targetUrl, port.toString() + "/")) {
+                        || StringUtils.equals(targetUrl, "http://security.theboyaply.cn/")
+                        || StringUtils.equals(targetUrl, "http://localhost/")) {
                     redirectStrategy.sendRedirect(request, response, securityProperties.getBrowser().getLoginPage());
                 }
             }
