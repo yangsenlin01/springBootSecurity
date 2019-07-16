@@ -22,9 +22,10 @@ public interface UserService {
      * 表单注册用户
      *
      * @param user
+     * @param request
      * @return
      */
-    ResponseData registForm(User user);
+    ResponseData registForm(User user, HttpServletRequest request);
 
     /**
      * 第三方登录时找不到用户直接使用社交账号的nickName在本系统注册用户

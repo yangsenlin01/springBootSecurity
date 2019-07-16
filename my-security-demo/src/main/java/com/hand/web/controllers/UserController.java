@@ -80,7 +80,7 @@ public class UserController {
 
     @PostMapping("/regist/form")
     public void formRegist(User user, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ResponseData responseData = userService.registForm(user);
+        ResponseData responseData = userService.registForm(user, request);
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         redirectStrategy.sendRedirect(request, response, "/to-demo-signIn?message=" + URLEncoder.encode(responseData.getMessage(), "UTF-8"));

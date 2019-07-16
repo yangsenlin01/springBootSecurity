@@ -2,6 +2,8 @@ package com.hand.web.service.impl;
 
 import com.hand.dto.User;
 import com.hand.security.core.support.ResponseData;
+import com.hand.security.core.utils.AddressUtils;
+import com.hand.security.core.utils.IpUtils;
 import com.hand.web.entity.Attachment;
 import com.hand.web.entity.File;
 import com.hand.web.entity.UserEntity;
@@ -66,7 +68,7 @@ public class UserServiceImpl implements UserService {
     private String filePath;
 
     @Override
-    public ResponseData registForm(User user) {
+    public ResponseData registForm(User user, HttpServletRequest request) {
         ResponseData responseData = new ResponseData(Boolean.TRUE);
 
         // 校验当前注册用户名是否已存在
@@ -94,6 +96,15 @@ public class UserServiceImpl implements UserService {
         userEntity.setFullName(user.getUsername());
         if (StringUtils.isBlank(userEntity.getPassword())) {
             userEntity.setPassword("123456");
+        }
+        if (StringUtils.isBlank(userEntity.getAddress())) {
+            // 获取真实IP
+            String ip = IpUtils.getIpAddr(request);
+            // 根据ip获取真实地址
+            String address = AddressUtils.getCityInfo(ip);
+            // 中国|西南|重庆市|重庆市|电信--》》按 | 转义
+            String[] addressArr = address.split("\\|");
+            userEntity.setAddress(addressArr[0] + ", " + addressArr[2] + ", " + addressArr[3]);
         }
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         if (userMapper.insertUseGeneratedKeys(userEntity) == 1) {
