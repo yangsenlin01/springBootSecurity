@@ -143,6 +143,17 @@
         <td align="left"><input type="submit" onclick="updateUser()" value="保存" /></td>
         <td align="left"><a href="/signOut">退出</a></td>
     </tr>
+    <tr style="margin-top: 10px">
+        <td align="left" valign="top">
+            <a href="/user/download/myfile?fileName=ES6总结.docx">下载文件</a>
+        </td>
+        <td align="left">
+            <form enctype="multipart/form-data" method="post" action="/user/upload/myfile">
+                <input type="file" name="file"/>
+                <input type="submit" value="上传"/>
+            </form>
+        </td>
+    </tr>
 </table>
 
 </body>

@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,8 +141,28 @@ public class UserController {
 
     @RequestMapping("/headImage")
     public void getUserHeadImage(@AuthenticationPrincipal UserDetails user, HttpServletRequest request, HttpServletResponse response) {
-        userService.getUserHeadImage(user,request, response);
+        userService.getUserHeadImage(user, request, response);
     }
+
+    /**
+     * 上传学习文件
+     *
+     * @param file
+     * @param request
+     * @return
+     */
+    @PostMapping("/upload/myfile")
+    @ResponseBody
+    public ResponseData uploading(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        return userService.uploadMyFile(file, request);
+    }
+
+    @GetMapping("/download/myfile")
+    public ResponseData downloading(@RequestParam("fileName") String fileName, HttpServletRequest request, HttpServletResponse response) {
+        userService.downloadMyFile(fileName, request, response);
+        return new ResponseData();
+    }
+
 
     /**
      * 获取认证信息

@@ -30,9 +30,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -97,16 +96,18 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isBlank(userEntity.getPassword())) {
             userEntity.setPassword("123456");
         }
-        if (StringUtils.isBlank(userEntity.getAddress())) {
-            // 获取真实IP
-            String ip = IpUtils.getIpAddr(request);
-            // 根据ip获取真实地址
-            String address = AddressUtils.getCityInfo(ip);
-            // 中国|西南|重庆市|重庆市|电信--》》按 | 转义
-            String[] addressArr = address.split("\\|");
-            userEntity.setAddress(addressArr[0] + ", " + addressArr[2] + ", " + addressArr[3]);
-        }
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+
+//        if (StringUtils.isBlank(userEntity.getAddress())) {
+//            // 获取真实IP
+//            String ip = IpUtils.getIpAddr(request);
+//            // 根据ip获取真实地址
+//            String address = AddressUtils.getCityInfo(ip);
+//            // 中国|西南|重庆市|重庆市|电信--》》按 | 转义
+//            String[] addressArr = address.split("\\|");
+//            userEntity.setAddress(addressArr[0] + ", " + addressArr[2] + ", " + addressArr[3]);
+//        }
+
         if (userMapper.insertUseGeneratedKeys(userEntity) == 1) {
             responseData.setMessage("账号：" + userEntity.getUsername() + "已注册成功");
         }
@@ -266,20 +267,63 @@ public class UserServiceImpl implements UserService {
             if (file != null) {
                 String filePath = file.getFilePath();
                 response.setContentType("multipart/form-data");
-                try (FileInputStream ips = new FileInputStream(new java.io.File(filePath));
-                     ServletOutputStream out= response.getOutputStream()) {
-                    //读取文件流
-                    int len = 0;
-                    byte[] buffer = new byte[1024 * 10];
-                    while ((len = ips.read(buffer)) != -1){
-                        out.write(buffer,0,len);
-                    }
-                    out.flush();
-                } catch (IOException e) {
-                    logger.info("获取头像信息出错");
-                }
+                this.downloadFile(response, filePath);
             }
         }
+    }
+
+    @Override
+    public ResponseData uploadMyFile(MultipartFile file, HttpServletRequest request) {
+        try {
+            uploadFile(file.getBytes(), filePath, file.getOriginalFilename());
+        } catch (Exception e) {
+            logger.info("文件上传失败!");
+            logger.info(e.getMessage());
+            return new ResponseData(false);
+        }
+        logger.info("文件上传成功!");
+        return new ResponseData();
+    }
+
+    @Override
+    public void downloadMyFile(String fileName, HttpServletRequest request, HttpServletResponse response) {
+        String path = filePath + fileName;
+        try {
+            // 配置文件下载
+            response.setHeader("content-type", "application/octet-stream");
+            response.setContentType("application/octet-stream");
+            // 下载文件能正常显示中文
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+            this.downloadFile(response, path);
+        } catch (UnsupportedEncodingException e) {
+            logger.info(e.getMessage());
+        }
+    }
+
+    private void downloadFile(HttpServletResponse response, String filePath) {
+        try (FileInputStream ips = new FileInputStream(new java.io.File(filePath));
+             ServletOutputStream out= response.getOutputStream()) {
+            //读取文件流
+            int len = 0;
+            byte[] buffer = new byte[1024 * 10];
+            while ((len = ips.read(buffer)) != -1){
+                out.write(buffer,0,len);
+            }
+            out.flush();
+        } catch (IOException e) {
+            logger.info("获取文件出错");
+        }
+    }
+
+    private void uploadFile(byte[] file, String filePath, String fileName) throws Exception {
+        java.io.File targetFile = new java.io.File(filePath);
+        if (!targetFile.exists()) {
+            targetFile.mkdirs();
+        }
+        FileOutputStream out = new FileOutputStream(filePath + fileName);
+        out.write(file);
+        out.flush();
+        out.close();
     }
 
     /**

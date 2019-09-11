@@ -75,4 +75,22 @@ public interface UserService {
      * @param response
      */
     void getUserHeadImage(UserDetails user, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 上传学习文件
+     *
+     * @param file
+     * @param request
+     * @return
+     */
+    ResponseData uploadMyFile(MultipartFile file, HttpServletRequest request);
+
+    /**
+     * 下载文件
+     *
+     * @param fileName
+     * @param request
+     * @param response
+     */
+    void downloadMyFile(String fileName, HttpServletRequest request, HttpServletResponse response);
 }
